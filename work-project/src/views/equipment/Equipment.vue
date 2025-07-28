@@ -414,7 +414,6 @@ function onMapEnter() {
   }
 }
 
-// 下钻动画结束后再隐藏弹窗
 function onMapLeave() {
   showInfo.value = false;
   infoImg.value = '';

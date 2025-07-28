@@ -341,7 +341,6 @@ onMounted(async () => {
     startAutoShow();
   });
 
-  // 窗口大小变化响应
   const resizeHandler = () => {
     chart && chart.resize()
     if (showInfo.value && currentInfo.value) {
