@@ -1,0 +1,36 @@
+*{margin: 0;padding: 0;}
+li{list-style: none;}
+body{
+    background-color: rgb(241, 242, 246);
+}
+.fl{
+    float: left;
+}
+.fr{
+    float: right;
+}
+
+.clear:after{
+    content: "";
+    height: 0;
+    display:block;
+    clear: both;
+}
+.mt{
+    margin-top: 10px;
+}
+.mb{
+    margin-bottom: 10px;
+}
+.ml{
+    margin-left: 10px;
+}
+.mr{
+    margin-right: 10px;
+}
+/* 隐藏滚动条，兼容性更好 */
+::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent;
+}
