@@ -353,7 +353,7 @@ function onMapEnter() {
       if (chartRef.value) {
         myChart = echarts.init(chartRef.value)
         myChart.setOption(option)
-        // 重新绑定事件
+        //  重新绑定事件
         myChart.on('click', handleMapClick)
         myChart.on('mouseover', function(params: any) {
           if (params.componentType === 'series' && params.seriesType === 'effectScatter') {

@@ -336,7 +336,7 @@ onMounted(async () => {
     }
   });
 
-  // 鼠标离开整个图表区域时也恢复轮播
+  //  鼠标离开整个图表区域时也恢复轮播
   chart.on('globalout', function() {
     startAutoShow();
   });
