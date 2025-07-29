@@ -103,6 +103,8 @@ const autoShowIndex = ref(0)
 let autoShowTimer: any = null
 const isHoveringPoint = ref(false)
 const lastHoveredIndex = ref(0)
+let mouseoutTimer: any = null // 鼠标离开防抖定时器
+let globaloutTimer: any = null // 全局离开防抖定时器
 
 // 计算属性
 const chartOption = computed(() => {
@@ -251,15 +253,15 @@ function getCustomMapOption(mapConfig: MapConfig, geoCoordMap: Record<string, [n
     return {
       name: String(feature.id),
       itemStyle: {
-        areaColor: prop.fill || '#eee',
-        borderColor: prop.stroke || '#333',
+        areaColor: prop.fill || '#031525',
+        borderColor: prop.stroke || '#00FEFF',
         borderWidth: prop['stroke-width'] || 1,
         opacity: prop['fill-opacity'] ?? 1,
       },
       emphasis: {
         itemStyle: {
-          areaColor: prop.fill || '#eee',
-          borderColor: prop.stroke || '#333',
+          areaColor: prop.fill || '#031525',
+          borderColor: prop.stroke || '#00FEFF',
           borderWidth: prop['stroke-width'] || 1,
           opacity: prop['fill-opacity'] ?? 1,
         },
@@ -269,22 +271,23 @@ function getCustomMapOption(mapConfig: MapConfig, geoCoordMap: Record<string, [n
   })
 
   return {
+    backgroundColor: mapConfig.backgroundColor || '#000',
     geo: {
       map: 'customMap',
       roam: mapConfig.roam || true,
       regions,
       silent: true,
       itemStyle: {
-        areaColor: '#eee',
-        borderColor: '#333',
+        areaColor: '#031525',
+        borderColor: '#00FEFF',
         borderWidth: 1,
         opacity: 1,
       },
       emphasis: {
         disabled: true,
         itemStyle: {
-          areaColor: '#eee',
-          borderColor: '#333',
+          areaColor: '#031525',
+          borderColor: '#00FEFF',
           borderWidth: 1,
           opacity: 1,
         },
@@ -430,6 +433,22 @@ function stopAutoShow() {
   }
 }
 
+// 清除所有定时器
+function clearAllTimers() {
+  if (autoShowTimer) {
+    clearInterval(autoShowTimer)
+    autoShowTimer = null
+  }
+  if (mouseoutTimer) {
+    clearTimeout(mouseoutTimer)
+    mouseoutTimer = null
+  }
+  if (globaloutTimer) {
+    clearTimeout(globaloutTimer)
+    globaloutTimer = null
+  }
+}
+
 function startAutoShowFromIndex(startIndex: number) {
   autoShowIndex.value = startIndex
   showPointInfo(props.pointData[startIndex])
@@ -481,6 +500,16 @@ function createChart() {
   
   if (props.enableHover) {
     chart.on('mouseover', { seriesType: 'effectScatter' }, (params: any) => {
+      // 清除所有相关定时器
+      if (mouseoutTimer) {
+        clearTimeout(mouseoutTimer)
+        mouseoutTimer = null
+      }
+      if (globaloutTimer) {
+        clearTimeout(globaloutTimer)
+        globaloutTimer = null
+      }
+      
       isHoveringPoint.value = true
       stopAutoShow()
       lastHoveredIndex.value = getPointIndexByName(params.data.name)
@@ -489,19 +518,37 @@ function createChart() {
     
     chart.on('mouseout', (params: any) => {
       if (params.componentType === 'series' && params.seriesType === 'effectScatter') {
+        // 清除之前的定时器
+        if (mouseoutTimer) {
+          clearTimeout(mouseoutTimer)
+        }
+        
         isHoveringPoint.value = false
-        setTimeout(() => {
-          showInfo.value = false
-          infoImg.value = ''
-          startAutoShowFromIndex(lastHoveredIndex.value)
-        }, 150)
+        // 延迟隐藏弹窗，避免鼠标快速移动时的闪烁
+        mouseoutTimer = setTimeout(() => {
+          if (!isHoveringPoint.value) {
+            showInfo.value = false
+            infoImg.value = ''
+            startAutoShowFromIndex(lastHoveredIndex.value)
+          }
+        }, 100)
       }
     })
     
     chart.on('globalout', () => {
+      // 清除之前的定时器
+      if (globaloutTimer) {
+        clearTimeout(globaloutTimer)
+      }
+      
       if (isHoveringPoint.value) {
         isHoveringPoint.value = false
-        startAutoShowFromIndex(lastHoveredIndex.value)
+        // 延迟恢复自动轮播，避免与mouseout事件冲突
+        globaloutTimer = setTimeout(() => {
+          if (!isHoveringPoint.value) {
+            startAutoShowFromIndex(lastHoveredIndex.value)
+          }
+        }, 200)
       }
     })
   }
@@ -531,7 +578,7 @@ function createChart() {
       chart.dispose()
       chart = null
     }
-    stopAutoShow()
+    clearAllTimers()
   })
 }
 
