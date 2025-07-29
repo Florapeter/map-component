@@ -1,11 +1,11 @@
 <template>
     <div id="container">
-        <GrMap />
+        <MapExample />
     </div>
 </template>
 
 <script setup lang='ts'>
-import GrMap from './GrMap.vue';
+import MapExample from '@/components/map/MapExample.vue';
 </script>
 
 <style scoped lang='less'>
