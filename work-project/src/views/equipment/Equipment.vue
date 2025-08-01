@@ -142,10 +142,9 @@ const option = {
     hideDelay: 0,
     showDelay: 0,
     alwaysShowContent: false,
-    // 添加渐入渐出动画
-    transitionDuration: 0.5,
+    transitionDuration: 1,
     extraCssText: `
-      transition: opacity 0.5s ease-in-out;
+      transition: opacity 1s ease-in-out;
     `,
     // 自定义显示和隐藏逻辑
     show: function (params: any) {
@@ -227,7 +226,7 @@ const option = {
       geoIndex: 0,
       z: 5,
       data: convertData(chinaDatas),
-      symbolSize: 0, // 不可见的散点
+      symbolSize: 0, 
       label: {
         normal: {
           show: true,
@@ -252,7 +251,7 @@ const option = {
         }
       },
       tooltip: {
-        show: false // 禁用标签的tooltip
+        show: false 
       }
     }
   ]
@@ -275,7 +274,6 @@ onMounted(() => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           const element = node as HTMLElement;
           if (element.classList.contains('echarts-tooltip')) {
-            // 新创建的tooltip，应用显示动画
             setTimeout(() => {
               element.style.opacity = '1';
             }, 10);
@@ -285,47 +283,40 @@ onMounted(() => {
     });
   });
   
-  // 开始观察DOM变化
   observer.observe(document.body, {
     childList: true,
     subtree: true
   });
   
   const showTooltip = () => {
-    // 如果用户正在hover，不执行轮播
     if (isUserHovering) return
     
-    // 隐藏所有tooltip
     chart.dispatchAction({
       type: 'hideTip'
     })
     
-    // 延迟显示下一个tooltip，给隐藏动画留出时间
     setTimeout(() => {
       if (!isUserHovering) {
         chart.dispatchAction({
           type: 'showTip',
-          seriesIndex: 1, // effectScatter系列的索引
+          seriesIndex: 1, 
           dataIndex: currentIndex
         })
         
-        // 更新索引
         currentIndex = (currentIndex + 1) % dataLength
       }
-    }, 500) // 等待隐藏动画完成
+    }, 500) 
   }
   
   const startCarousel = () => {
-    if (tooltipInterval) return // 如果已经在运行，不重复启动
+    if (tooltipInterval) return 
     
-    // 立即显示第一个tooltip
     setTimeout(() => {
       if (!isUserHovering) {
         showTooltip()
       }
     }, 1000)
     
-    // 设置轮播定时器，每3秒切换一次
     tooltipInterval = setInterval(showTooltip, 3000)
   }
   
@@ -336,14 +327,11 @@ onMounted(() => {
     }
   }
   
-  // 监听鼠标事件
   chart.on('mouseover', (params) => {
-    // 只有当鼠标hover到effectScatter系列的散点时才停止轮播
     if (params.seriesType === 'effectScatter' && params.componentType === 'series') {
       isUserHovering = true
       stopCarousel()
       
-      // 延迟显示tooltip，给动画留出时间
       setTimeout(() => {
         if (isUserHovering) {
           chart.dispatchAction({
@@ -357,28 +345,22 @@ onMounted(() => {
   })
   
   chart.on('mouseout', (params) => {
-    // 只有当鼠标离开effectScatter系列的散点时才重启轮播
     if (params.seriesType === 'effectScatter' && params.componentType === 'series') {
       isUserHovering = false
-      
-      // 隐藏当前tooltip
       chart.dispatchAction({
         type: 'hideTip'
       })
       
-      // 延迟重启轮播，等待隐藏动画完成
       setTimeout(() => {
         if (!isUserHovering) {
           startCarousel()
         }
-      }, 550) // 500ms动画时间 + 50ms缓冲
+      }, 550) 
     }
   })
   
-  // 启动轮播
   startCarousel()
   
-  // 组件卸载时清除定时器和observer
   onUnmounted(() => {
     stopCarousel()
     observer.disconnect()
